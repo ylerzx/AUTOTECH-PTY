@@ -10,7 +10,7 @@
   --color-surface-2: #1f232c;
   --color-border: #2a2f3a;
   --color-text: #e8eaed;
-  --color-text-dim: #9aa0ac;
+  --color-text-dim: #adb3be; /* contraste AA sobre --color-surface-2 (>= 4.5:1) */
   --color-primary: #4f8cff;
   --color-primary-dim: #274a8f;
   --color-danger: #ff5c5c;
@@ -107,6 +107,11 @@ input:focus, select:focus, button:focus-visible {
   color: var(--color-text-dim);
 }
 
+.header-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
 main {
   padding: var(--space-4);
   max-width: 640px;
@@ -153,6 +158,19 @@ main {
   border-radius: 50%;
   background: var(--color-surface-2);
   font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.btn-sm {
+  min-height: 36px;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+button.btn-icon.btn-sm {
+  width: 32px;
+  height: 32px;
+  font-size: 0.9rem;
 }
 
 .fab {
@@ -228,6 +246,15 @@ fieldset {
   gap: var(--space-3);
 }
 
+.form-error {
+  background: rgba(255, 92, 92, 0.12);
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
 legend {
   padding: 0 var(--space-2);
   font-size: var(--font-size-sm);
@@ -284,6 +311,12 @@ legend {
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--space-3);
+}
+
+.card-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
 }
 
 .vehicle-name {
@@ -384,6 +417,49 @@ legend {
 .maint-row .maint-sub {
   font-size: 0.75rem;
   color: var(--color-text-dim);
+}
+
+.maint-row-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.maint-row-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* ---------- Skeleton loading ---------- */
+#skeletonList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+#skeletonList.hidden { display: none; }
+
+.skeleton-card {
+  height: 220px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(
+    100deg,
+    var(--color-surface) 30%,
+    var(--color-surface-2) 50%,
+    var(--color-surface) 70%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-card { animation: none; }
 }
 
 /* ---------- Estado vacío ---------- */
