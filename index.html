@@ -23,10 +23,20 @@
     <h1>🚗 Mi Garaje</h1>
     <p class="subtitle" id="vehicleCount">Cargando…</p>
   </div>
-  <button class="btn-icon" id="btnNotifPermission" title="Activar notificaciones" aria-label="Activar notificaciones">🔔</button>
+  <div class="header-actions">
+    <button class="btn-icon" id="btnExport" title="Exportar copia de seguridad" aria-label="Exportar copia de seguridad">⬇️</button>
+    <button class="btn-icon" id="btnImport" title="Importar copia de seguridad" aria-label="Importar copia de seguridad">⬆️</button>
+    <button class="btn-icon" id="btnNotifPermission" title="Activar notificaciones" aria-label="Activar notificaciones">🔔</button>
+  </div>
+  <input type="file" id="importFileInput" accept="application/json" class="hidden" aria-hidden="true">
 </header>
 
 <main id="mainContent">
+  <div id="skeletonList" aria-hidden="true">
+    <div class="skeleton-card"></div>
+    <div class="skeleton-card"></div>
+  </div>
+
   <div id="vehicleList"></div>
 
   <div class="empty-state hidden" id="emptyState">
@@ -41,9 +51,12 @@
 <div class="modal-backdrop" id="modalBackdrop" hidden>
   <form class="modal-sheet" id="vehicleForm" novalidate>
     <div class="modal-title-row">
-      <h2>Nuevo vehículo</h2>
+      <h2 id="modalTitle">Nuevo vehículo</h2>
       <button type="button" class="btn-icon" id="btnCloseModal" aria-label="Cerrar">✕</button>
     </div>
+
+    <input type="hidden" id="inputVehicleId" value="">
+    <p class="form-error hidden" id="formError" role="alert"></p>
 
     <fieldset>
       <legend>Datos del vehículo</legend>
@@ -130,8 +143,21 @@
       <div id="maintDetailsContainer"></div>
     </fieldset>
 
-    <button type="submit" class="btn btn-primary">Guardar vehículo</button>
+    <button type="submit" class="btn btn-primary" id="btnSubmitVehicle">Guardar vehículo</button>
   </form>
+</div>
+
+<!-- ============ MODAL: Confirmación de importación ============ -->
+<div class="modal-backdrop" id="importModalBackdrop" hidden>
+  <div class="modal-sheet">
+    <div class="modal-title-row">
+      <h2>Importar copia de seguridad</h2>
+      <button type="button" class="btn-icon" id="btnCloseImportModal" aria-label="Cerrar">✕</button>
+    </div>
+    <p class="vehicle-meta" id="importSummary"></p>
+    <button type="button" class="btn btn-secondary" id="btnImportMerge">Agregar a mi garaje actual</button>
+    <button type="button" class="btn btn-danger btn-secondary" id="btnImportReplace">Reemplazar todo mi garaje</button>
+  </div>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -168,10 +194,14 @@
         <div class="vehicle-name"></div>
         <div class="vehicle-meta"></div>
       </div>
-      <button class="btn-icon btn-danger btn-delete-vehicle" aria-label="Eliminar vehículo">🗑️</button>
+      <div class="card-actions">
+        <button class="btn-icon btn-edit-vehicle" aria-label="Editar vehículo">✏️</button>
+        <button class="btn-icon btn-danger btn-delete-vehicle" aria-label="Eliminar vehículo">🗑️</button>
+      </div>
     </div>
 
     <div class="status-grid general-status"></div>
+    <button type="button" class="btn btn-secondary btn-sm btn-general-done">✓ Marcar mantenimiento general como hecho</button>
 
     <button class="maint-toggle" aria-expanded="false" type="button">
       <span class="maint-toggle-label">Mantenimientos específicos</span>
@@ -183,11 +213,14 @@
 
 <template id="maintRowTemplate">
   <div class="maint-row">
-    <div>
+    <div class="maint-row-info">
       <div class="maint-type"></div>
       <div class="maint-sub"></div>
     </div>
-    <span class="badge"></span>
+    <div class="maint-row-actions">
+      <span class="badge"></span>
+      <button type="button" class="btn-icon btn-sm btn-maint-done" aria-label="Marcar como hecho">✓</button>
+    </div>
   </div>
 </template>
 
