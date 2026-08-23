@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mi Garaje PA — Mantenimientos y Trámites</title>
+<meta name="description" content="Gestiona el mantenimiento y los trámites (revisado y lata) de tus vehículos en Panamá, sin conexión.">
+<meta name="theme-color" content="#0f1115">
+
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mi Garaje">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div>
+    <h1>🚗 Mi Garaje</h1>
+    <p class="subtitle" id="vehicleCount">Cargando…</p>
+  </div>
+  <button class="btn-icon" id="btnNotifPermission" title="Activar notificaciones" aria-label="Activar notificaciones">🔔</button>
+</header>
+
+<main id="mainContent">
+  <div id="vehicleList"></div>
+
+  <div class="empty-state hidden" id="emptyState">
+    <h2>Tu garaje está vacío</h2>
+    <p>Agrega tu primer vehículo para controlar mantenimientos y trámites.</p>
+  </div>
+</main>
+
+<button class="fab" id="btnAddVehicle" aria-label="Agregar vehículo">+</button>
+
+<!-- ============ MODAL: Formulario de vehículo ============ -->
+<div class="modal-backdrop" id="modalBackdrop" hidden>
+  <form class="modal-sheet" id="vehicleForm" novalidate>
+    <div class="modal-title-row">
+      <h2>Nuevo vehículo</h2>
+      <button type="button" class="btn-icon" id="btnCloseModal" aria-label="Cerrar">✕</button>
+    </div>
+
+    <fieldset>
+      <legend>Datos del vehículo</legend>
+
+      <div class="field">
+        <label for="inputBrand">Marca</label>
+        <input type="text" id="inputBrand" autocomplete="off" placeholder="Ej. Toyota" required>
+        <ul class="autocomplete-list" id="brandList"></ul>
+      </div>
+
+      <div class="field">
+        <label for="inputModel">Modelo</label>
+        <input type="text" id="inputModel" autocomplete="off" placeholder="Selecciona una marca primero" required disabled>
+        <ul class="autocomplete-list" id="modelList"></ul>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="inputYear">Año</label>
+          <input type="number" id="inputYear" min="1970" max="2100" placeholder="2020" required>
+        </div>
+        <div class="field">
+          <label for="inputPlate">Placa</label>
+          <input type="text" id="inputPlate" placeholder="AB-1234" required>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Kilometraje y mantenimiento general</legend>
+
+      <div class="field">
+        <label for="inputCurrentKm">Kilometraje actual (km)</label>
+        <input type="number" id="inputCurrentKm" min="0" placeholder="45000" required>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="inputGeneralInterval">Intervalo general sugerido (km)</label>
+          <input type="number" id="inputGeneralInterval" min="0" placeholder="10000" required>
+        </div>
+        <div class="field">
+          <label for="inputGeneralLastKm">Km del último servicio</label>
+          <input type="number" id="inputGeneralLastKm" min="0" placeholder="40000" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="inputGeneralLastDate">Fecha del último servicio general</label>
+        <input type="date" id="inputGeneralLastDate" required>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Trámites de Panamá</legend>
+      <div class="field">
+        <label for="inputRegMonth">Mes de inscripción del vehículo</label>
+        <select id="inputRegMonth" required>
+          <option value="">Selecciona un mes</option>
+          <option value="1">Enero</option><option value="2">Febrero</option>
+          <option value="3">Marzo</option><option value="4">Abril</option>
+          <option value="5">Mayo</option><option value="6">Junio</option>
+          <option value="7">Julio</option><option value="8">Agosto</option>
+          <option value="9">Septiembre</option><option value="10">Octubre</option>
+          <option value="11">Noviembre</option><option value="12">Diciembre</option>
+        </select>
+        <p class="vehicle-meta">El revisado y la lata renuevan anualmente en este mes.</p>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Mantenimientos específicos (opcional)</legend>
+      <p class="vehicle-meta">Selecciona los que quieras controlar por separado.</p>
+
+      <div class="chip-grid" id="maintChipGrid">
+        <button type="button" class="chip" data-type="Cambio de aceite" aria-pressed="false">🛢️ Aceite</button>
+        <button type="button" class="chip" data-type="Frenos" aria-pressed="false">🛑 Frenos</button>
+        <button type="button" class="chip" data-type="Transmisión" aria-pressed="false">⚙️ Transmisión</button>
+        <button type="button" class="chip" data-type="Rotación de llantas" aria-pressed="false">🛞 Llantas</button>
+        <button type="button" class="chip" data-type="Bujías" aria-pressed="false">🔌 Bujías</button>
+        <button type="button" class="chip" data-type="Batería" aria-pressed="false">🔋 Batería</button>
+      </div>
+
+      <div id="maintDetailsContainer"></div>
+    </fieldset>
+
+    <button type="submit" class="btn btn-primary">Guardar vehículo</button>
+  </form>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<template id="maintDetailTemplate">
+  <div class="maint-detail">
+    <div class="field-row">
+      <div class="field">
+        <label>Intervalo (km)</label>
+        <input type="number" class="maint-interval-km" min="0" placeholder="10000">
+      </div>
+      <div class="field">
+        <label>Intervalo (meses)</label>
+        <input type="number" class="maint-interval-months" min="0" placeholder="6">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Último km realizado</label>
+        <input type="number" class="maint-last-km" min="0" placeholder="40000">
+      </div>
+      <div class="field">
+        <label>Fecha última vez</label>
+        <input type="date" class="maint-last-date">
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="vehicleCardTemplate">
+  <article class="vehicle-card">
+    <div class="vehicle-card-header">
+      <div>
+        <div class="vehicle-name"></div>
+        <div class="vehicle-meta"></div>
+      </div>
+      <button class="btn-icon btn-danger btn-delete-vehicle" aria-label="Eliminar vehículo">🗑️</button>
+    </div>
+
+    <div class="status-grid general-status"></div>
+
+    <button class="maint-toggle" aria-expanded="false" type="button">
+      <span class="maint-toggle-label">Mantenimientos específicos</span>
+      <span class="chevron">▾</span>
+    </button>
+    <div class="maint-list"></div>
+  </article>
+</template>
+
+<template id="maintRowTemplate">
+  <div class="maint-row">
+    <div>
+      <div class="maint-type"></div>
+      <div class="maint-sub"></div>
+    </div>
+    <span class="badge"></span>
+  </div>
+</template>
+
+<script src="app.js" type="module" defer></script>
+</body>
+</html>
